@@ -569,8 +569,10 @@ class FabricUtils {
     async connectToNetworkAsOrg1() {
         const ccp = this.buildCCPOrg1();
         const wallet = await this.buildWallet(Wallets, this.walletPath);
-
+        console.log('\n\n\nwallet is here', wallet, '\n\n\n')
         const gateway = new Gateway();
+        console.log('\n\n\ngateway is here', gateway, '\n\n\n')
+
         await gateway.connect(ccp, {
             wallet,
             identity: this.org1UserId,

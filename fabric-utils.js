@@ -426,7 +426,200 @@
 // module.exports = FabricUtils;
 
 
+// const { Gateway, Wallets } = require('fabric-network');
+// const path = require('path');
+// const fs = require('fs');
+
+// class FabricUtils {
+//     constructor() {
+//         this.channelName = 'mychannel';
+//         this.chaincodeName = 'basic';
+//         this.mspOrg1 = 'Org1MSP';
+//         this.mspOrg2 = 'Org2MSP';
+//         this.walletPath = path.join(process.cwd(), 'wallet');
+//         this.org1UserId = 'Admin@org1.example.com';
+//         this.org2UserId = 'Admin@org2.example.com';
+//     }
+
+//     buildCCPOrg1() {
+//         const ccpPath = path.resolve(__dirname, 'config', 'connection-org1.json');
+//         const fileExists = fs.existsSync(ccpPath);
+//         if (!fileExists) {
+//             throw new Error(`Connection profile not found at: ${ccpPath}`);
+//         }
+//         const contents = fs.readFileSync(ccpPath, 'utf8');
+//         const ccp = JSON.parse(contents);
+//         console.log(`✅ Loaded Org1 network configuration from ${ccpPath}`);
+//         return ccp;
+//     }
+
+//     buildCCPOrg2() {
+//         const ccpPath = path.resolve(__dirname, 'config', 'connection-org2.json');
+//         const fileExists = fs.existsSync(ccpPath);
+//         if (!fileExists) {
+//             throw new Error(`Connection profile not found at: ${ccpPath}`);
+//         }
+//         const contents = fs.readFileSync(ccpPath, 'utf8');
+//         const ccp = JSON.parse(contents);
+//         console.log(`✅ Loaded Org2 network configuration from ${ccpPath}`);
+//         return ccp;
+//     }
+
+//     async buildWallet(Wallets, walletPath) {
+//         let wallet;
+//         if (walletPath) {
+//             wallet = await Wallets.newFileSystemWallet(walletPath);
+//             console.log(`✅ Built a file system wallet at ${walletPath}`);
+//         } else {
+//             wallet = await Wallets.newInMemoryWallet();
+//             console.log('✅ Built an in-memory wallet');
+//         }
+//         return wallet;
+//     }
+
+//     // Import pre-enrolled admin for Org1 (without CA)
+//     async importAdminOrg1() {
+//         try {
+//             const wallet = await this.buildWallet(Wallets, this.walletPath);
+
+//             // Check if admin already exists
+//             const identity = await wallet.get(this.org1UserId);
+//             if (identity) {
+//                 console.log('✅ Admin identity for Org1 already exists in wallet');
+//                 return;
+//             }
+
+//             // Path to admin certificates
+//             const credPath = path.join(
+//                 process.cwd(),
+//                 '../fabric-samples/test-network/organizations/peerOrganizations/org1.example.com/users/Admin@org1.example.com'
+//             );
+
+//             const certPath = path.join(credPath, 'msp/signcerts/cert.pem');
+//             const keyDir = path.join(credPath, 'msp/keystore');
+//             const keyFiles = fs.readdirSync(keyDir);
+//             const keyPath = path.join(keyDir, keyFiles[0]);
+
+//             const cert = fs.readFileSync(certPath).toString();
+//             const key = fs.readFileSync(keyPath).toString();
+
+//             const x509Identity = {
+//                 credentials: {
+//                     certificate: cert,
+//                     privateKey: key,
+//                 },
+//                 mspId: this.mspOrg1,
+//                 type: 'X.509',
+//             };
+
+//             await wallet.put(this.org1UserId, x509Identity);
+//             console.log('✅ Successfully imported admin identity for Org1');
+
+//         } catch (error) {
+//             console.error(`❌ Failed to import admin for Org1: ${error}`);
+//             throw error;
+//         }
+//     }
+
+//     // Import pre-enrolled admin for Org2 (without CA)
+//     async importAdminOrg2() {
+//         try {
+//             const wallet = await this.buildWallet(Wallets, this.walletPath);
+
+//             // Check if admin already exists
+//             const identity = await wallet.get(this.org2UserId);
+//             if (identity) {
+//                 console.log('✅ Admin identity for Org2 already exists in wallet');
+//                 return;
+//             }
+
+//             // Path to admin certificates
+//             const credPath = path.join(
+//                 process.cwd(),
+//                 '../fabric-samples/test-network/organizations/peerOrganizations/org2.example.com/users/Admin@org2.example.com'
+//             );
+
+//             const certPath = path.join(credPath, 'msp/signcerts/cert.pem');
+//             const keyDir = path.join(credPath, 'msp/keystore');
+//             const keyFiles = fs.readdirSync(keyDir);
+//             const keyPath = path.join(keyDir, keyFiles[0]);
+
+//             const cert = fs.readFileSync(certPath).toString();
+//             const key = fs.readFileSync(keyPath).toString();
+
+//             const x509Identity = {
+//                 credentials: {
+//                     certificate: cert,
+//                     privateKey: key,
+//                 },
+//                 mspId: this.mspOrg2,
+//                 type: 'X.509',
+//             };
+
+//             await wallet.put(this.org2UserId, x509Identity);
+//             console.log('✅ Successfully imported admin identity for Org2');
+
+//         } catch (error) {
+//             console.error(`❌ Failed to import admin for Org2: ${error}`);
+//             throw error;
+//         }
+//     }
+
+//     // Connect to network using Org1
+//     async connectToNetworkAsOrg1() {
+//         const ccp = this.buildCCPOrg1();
+//         const wallet = await this.buildWallet(Wallets, this.walletPath);
+//         console.log('\n\n\nwallet is here', wallet, '\n\n\n')
+//         const gateway = new Gateway();
+//         console.log('\n\n\ngateway is here', gateway, '\n\n\n')
+
+//         await gateway.connect(ccp, {
+//             wallet,
+//             identity: this.org1UserId,
+//             discovery: { enabled: true, asLocalhost: true }
+//         });
+
+//         const network = await gateway.getNetwork(this.channelName);
+//         const contract = network.getContract(this.chaincodeName);
+
+//         return { contract, network, gateway };
+//     }
+
+//     // Connect to network using Org2
+//     async connectToNetworkAsOrg2() {
+//         const ccp = this.buildCCPOrg2();
+//         const wallet = await this.buildWallet(Wallets, this.walletPath);
+
+//         const gateway = new Gateway();
+//         await gateway.connect(ccp, {
+//             wallet,
+//             identity: this.org2UserId,
+//             discovery: { enabled: true, asLocalhost: true }
+//         });
+
+//         const network = await gateway.getNetwork(this.channelName);
+//         const contract = network.getContract(this.chaincodeName);
+
+//         return { contract, network, gateway };
+//     }
+
+//     // Generic connect method (defaults to Org1)
+//     async connectToNetwork(org = 'org1') {
+//         if (org === 'org1') {
+//             return await this.connectToNetworkAsOrg1();
+//         } else if (org === 'org2') {
+//             return await this.connectToNetworkAsOrg2();
+//         } else {
+//             throw new Error('Invalid organization. Use "org1" or "org2"');
+//         }
+//     }
+// }
+
+// module.exports = FabricUtils;
+
+
 const { Gateway, Wallets } = require('fabric-network');
+const ConnectionProfileBuilder = require('./connection-profile-builder');
 const path = require('path');
 const fs = require('fs');
 
@@ -439,30 +632,27 @@ class FabricUtils {
         this.walletPath = path.join(process.cwd(), 'wallet');
         this.org1UserId = 'Admin@org1.example.com';
         this.org2UserId = 'Admin@org2.example.com';
+        this.connectionBuilder = new ConnectionProfileBuilder();
     }
 
     buildCCPOrg1() {
-        const ccpPath = path.resolve(__dirname, 'config', 'connection-org1.json');
-        const fileExists = fs.existsSync(ccpPath);
-        if (!fileExists) {
-            throw new Error(`Connection profile not found at: ${ccpPath}`);
+        try {
+            console.log('📋 Building connection profile for Org1...');
+            return this.connectionBuilder.buildConnectionProfileOrg1();
+        } catch (error) {
+            console.error('❌ Failed to build connection profile for Org1:', error.message);
+            throw error;
         }
-        const contents = fs.readFileSync(ccpPath, 'utf8');
-        const ccp = JSON.parse(contents);
-        console.log(`✅ Loaded Org1 network configuration from ${ccpPath}`);
-        return ccp;
     }
 
     buildCCPOrg2() {
-        const ccpPath = path.resolve(__dirname, 'config', 'connection-org2.json');
-        const fileExists = fs.existsSync(ccpPath);
-        if (!fileExists) {
-            throw new Error(`Connection profile not found at: ${ccpPath}`);
+        try {
+            console.log('📋 Building connection profile for Org2...');
+            return this.connectionBuilder.buildConnectionProfileOrg2();
+        } catch (error) {
+            console.error('❌ Failed to build connection profile for Org2:', error.message);
+            throw error;
         }
-        const contents = fs.readFileSync(ccpPath, 'utf8');
-        const ccp = JSON.parse(contents);
-        console.log(`✅ Loaded Org2 network configuration from ${ccpPath}`);
-        return ccp;
     }
 
     async buildWallet(Wallets, walletPath) {
@@ -477,29 +667,43 @@ class FabricUtils {
         return wallet;
     }
 
-    // Import pre-enrolled admin for Org1 (without CA)
     async importAdminOrg1() {
         try {
+            console.log('👤 Importing Admin for Org1...');
             const wallet = await this.buildWallet(Wallets, this.walletPath);
 
-            // Check if admin already exists
             const identity = await wallet.get(this.org1UserId);
             if (identity) {
                 console.log('✅ Admin identity for Org1 already exists in wallet');
                 return;
             }
 
-            // Path to admin certificates
-            const credPath = path.join(
-                process.cwd(),
-                '../fabric-samples/test-network/organizations/peerOrganizations/org1.example.com/users/Admin@org1.example.com'
+            const credPath = path.resolve(
+                __dirname,
+                '..',
+                'fabric-samples/test-network/organizations/peerOrganizations/org1.example.com/users/Admin@org1.example.com'
             );
+
+            console.log(`📁 Looking for credentials at: ${credPath}`);
 
             const certPath = path.join(credPath, 'msp/signcerts/cert.pem');
             const keyDir = path.join(credPath, 'msp/keystore');
-            const keyFiles = fs.readdirSync(keyDir);
-            const keyPath = path.join(keyDir, keyFiles[0]);
 
+            if (!fs.existsSync(certPath)) {
+                throw new Error(`Certificate not found at: ${certPath}`);
+            }
+
+            if (!fs.existsSync(keyDir)) {
+                throw new Error(`Key directory not found at: ${keyDir}`);
+            }
+
+            const keyFiles = fs.readdirSync(keyDir);
+            if (keyFiles.length === 0) {
+                throw new Error(`No key files found in: ${keyDir}`);
+            }
+
+            const keyPath = path.join(keyDir, keyFiles[0]);
+            
             const cert = fs.readFileSync(certPath).toString();
             const key = fs.readFileSync(keyPath).toString();
 
@@ -516,103 +720,64 @@ class FabricUtils {
             console.log('✅ Successfully imported admin identity for Org1');
 
         } catch (error) {
-            console.error(`❌ Failed to import admin for Org1: ${error}`);
+            console.error(`❌ Failed to import admin for Org1: ${error.message}`);
             throw error;
         }
     }
 
-    // Import pre-enrolled admin for Org2 (without CA)
-    async importAdminOrg2() {
+    async connectToNetworkAsOrg1() {
         try {
+            console.log('🔗 Connecting to network as Org1...');
+            
+            const ccp = this.buildCCPOrg1();
             const wallet = await this.buildWallet(Wallets, this.walletPath);
 
-            // Check if admin already exists
-            const identity = await wallet.get(this.org2UserId);
-            if (identity) {
-                console.log('✅ Admin identity for Org2 already exists in wallet');
-                return;
+            // Check if identity exists in wallet
+            const identity = await wallet.get(this.org1UserId);
+            if (!identity) {
+                throw new Error(`Identity ${this.org1UserId} not found in wallet. Run importAdminOrg1 first.`);
             }
 
-            // Path to admin certificates
-            const credPath = path.join(
-                process.cwd(),
-                '../fabric-samples/test-network/organizations/peerOrganizations/org2.example.com/users/Admin@org2.example.com'
-            );
-
-            const certPath = path.join(credPath, 'msp/signcerts/cert.pem');
-            const keyDir = path.join(credPath, 'msp/keystore');
-            const keyFiles = fs.readdirSync(keyDir);
-            const keyPath = path.join(keyDir, keyFiles[0]);
-
-            const cert = fs.readFileSync(certPath).toString();
-            const key = fs.readFileSync(keyPath).toString();
-
-            const x509Identity = {
-                credentials: {
-                    certificate: cert,
-                    privateKey: key,
+            const gateway = new Gateway();
+            
+            // Connect with more detailed options
+            await gateway.connect(ccp, {
+                wallet,
+                identity: this.org1UserId,
+                discovery: { 
+                    enabled: true, 
+                    asLocalhost: true 
                 },
-                mspId: this.mspOrg2,
-                type: 'X.509',
-            };
+                eventHandlerOptions: {
+                    commitTimeout: 300,
+                    strategy: null
+                }
+            });
 
-            await wallet.put(this.org2UserId, x509Identity);
-            console.log('✅ Successfully imported admin identity for Org2');
+            console.log('✅ Connected to gateway');
+
+            const network = await gateway.getNetwork(this.channelName);
+            console.log('✅ Connected to channel:', this.channelName);
+
+            const contract = network.getContract(this.chaincodeName);
+            console.log('✅ Connected to chaincode:', this.chaincodeName);
+
+            return { contract, network, gateway };
 
         } catch (error) {
-            console.error(`❌ Failed to import admin for Org2: ${error}`);
+            console.error(`❌ Failed to connect to network: ${error.message}`);
             throw error;
         }
     }
 
-    // Connect to network using Org1
-    async connectToNetworkAsOrg1() {
-        const ccp = this.buildCCPOrg1();
-        const wallet = await this.buildWallet(Wallets, this.walletPath);
-        console.log('\n\n\nwallet is here', wallet, '\n\n\n')
-        const gateway = new Gateway();
-        console.log('\n\n\ngateway is here', gateway, '\n\n\n')
-
-        await gateway.connect(ccp, {
-            wallet,
-            identity: this.org1UserId,
-            discovery: { enabled: true, asLocalhost: true }
-        });
-
-        const network = await gateway.getNetwork(this.channelName);
-        const contract = network.getContract(this.chaincodeName);
-
-        return { contract, network, gateway };
-    }
-
-    // Connect to network using Org2
-    async connectToNetworkAsOrg2() {
-        const ccp = this.buildCCPOrg2();
-        const wallet = await this.buildWallet(Wallets, this.walletPath);
-
-        const gateway = new Gateway();
-        await gateway.connect(ccp, {
-            wallet,
-            identity: this.org2UserId,
-            discovery: { enabled: true, asLocalhost: true }
-        });
-
-        const network = await gateway.getNetwork(this.channelName);
-        const contract = network.getContract(this.chaincodeName);
-
-        return { contract, network, gateway };
-    }
-
-    // Generic connect method (defaults to Org1)
     async connectToNetwork(org = 'org1') {
         if (org === 'org1') {
             return await this.connectToNetworkAsOrg1();
-        } else if (org === 'org2') {
-            return await this.connectToNetworkAsOrg2();
         } else {
-            throw new Error('Invalid organization. Use "org1" or "org2"');
+            throw new Error('Only org1 implemented for now');
         }
     }
 }
 
 module.exports = FabricUtils;
+

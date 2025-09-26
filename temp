@@ -154,3 +154,57 @@ curl "http://localhost:3000/api/assets?org=org2"
 curl -X POST http://localhost:3000/api/assets \
   -H "Content-Type: application/json" \
   -d '{"id":"asset10","color":"red","size":"40","owner":"Alice","appraisedValue":"1000","org":"org1"}'
+
+
+
+
+
+##fix
+# Check running containers
+docker ps
+
+# Check if CA containers are running
+docker ps | grep ca
+
+# Navigate to your Fabric test network
+cd ~/fabric-workspace/fabric-samples/test-network
+
+# Stop the current network
+./network.sh down
+
+# Start network WITH Certificate Authority
+./network.sh up createChannel -ca
+
+# Deploy chaincode
+./network.sh deployCC -ccn basic -ccp ../asset-transfer-basic/chaincode-javascript/ -ccl javascript
+
+3
+docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+
+
+
+5
+
+6#!/bin/bash
+
+echo "🛑 Stopping current network..."
+cd ~/fabric-workspace/fabric-samples/test-network
+./network.sh down
+
+echo "🚀 Starting network with CA..."
+./network.sh up createChannel -ca
+
+echo "📦 Deploying chaincode..."
+./network.sh deployCC -ccn basic -ccp ../asset-transfer-basic/chaincode-javascript/ -ccl javascript
+
+echo "✅ Verifying network..."
+docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" | grep -E "(peer|orderer|ca)"
+
+echo "🎉 Network ready!"
+
+
+# Test CA Org1
+curl -k https://localhost:7054/cainfo
+
+# Test CA Org2  
+curl -k https://localhost:8054/cainfo

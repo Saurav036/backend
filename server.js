@@ -161,19 +161,17 @@ const fabricUtils = new FabricUtils();
 const blockchainService = new BlockchainService();
 
 // Initialize the network (enroll admins and register users)
+// Initialize the network (import pre-enrolled admins)
 async function initializeNetwork() {
     try {
         console.log('🚀 Initializing Hyperledger Fabric Network...');
         
-        // Initialize Org1
-        console.log('📝 Setting up Org1...');
-        await fabricUtils.enrollAdminOrg1();
-        await fabricUtils.registerUserOrg1();
+        // Import pre-enrolled admins (no CA needed)
+        console.log('📝 Importing Org1 admin...');
+        await fabricUtils.importAdminOrg1();
         
-        // Initialize Org2
-        console.log('📝 Setting up Org2...');
-        await fabricUtils.enrollAdminOrg2();
-        await fabricUtils.registerUserOrg2();
+        console.log('📝 Importing Org2 admin...');
+        await fabricUtils.importAdminOrg2();
         
         // Initialize ledger
         console.log('📚 Initializing ledger...');

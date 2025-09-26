@@ -14,10 +14,20 @@ class ConnectionProfileBuilder {
 
         // Read TLS CA certificate
         const tlsCertPath = path.join(org1CryptoPath, 'peers/peer0.org1.example.com/tls/ca.crt');
+        
+        if (!fs.existsSync(tlsCertPath)) {
+            throw new Error(`TLS certificate not found at: ${tlsCertPath}`);
+        }
+        
         const tlsCert = fs.readFileSync(tlsCertPath).toString();
 
         // Read CA certificate
         const caCertPath = path.join(org1CryptoPath, 'ca/ca.org1.example.com-cert.pem');
+        
+        if (!fs.existsSync(caCertPath)) {
+            throw new Error(`CA certificate not found at: ${caCertPath}`);
+        }
+        
         const caCert = fs.readFileSync(caCertPath).toString();
 
         return {
@@ -68,10 +78,20 @@ class ConnectionProfileBuilder {
 
         // Read TLS CA certificate
         const tlsCertPath = path.join(org2CryptoPath, 'peers/peer0.org2.example.com/tls/ca.crt');
+        
+        if (!fs.existsSync(tlsCertPath)) {
+            throw new Error(`TLS certificate not found at: ${tlsCertPath}`);
+        }
+        
         const tlsCert = fs.readFileSync(tlsCertPath).toString();
 
         // Read CA certificate
         const caCertPath = path.join(org2CryptoPath, 'ca/ca.org2.example.com-cert.pem');
+        
+        if (!fs.existsSync(caCertPath)) {
+            throw new Error(`CA certificate not found at: ${caCertPath}`);
+        }
+        
         const caCert = fs.readFileSync(caCertPath).toString();
 
         return {
@@ -116,4 +136,3 @@ class ConnectionProfileBuilder {
 }
 
 module.exports = ConnectionProfileBuilder;
-

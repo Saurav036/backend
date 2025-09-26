@@ -1,0 +1,156 @@
+# Create a working directory
+mkdir ~/fabric-workspace
+cd ~/fabric-workspace
+
+# Download Fabric samples, binaries, and Docker images
+curl -sSL https://bit.ly/2ysbOFE | bash -s -- 2.5.0 1.5.2
+
+# This command downloads:
+# - fabric-samples repository
+# - Hyperledger Fabric binaries
+# - Docker images
+
+
+cd fabric-samples/test-network
+
+
+# View help for network script
+./network.sh -h
+# Clean up any previous network
+./network.sh down
+
+# Start the network (peers, orderer, but no channel)
+./network.sh up
+
+
+# Clean up any previous network
+./network.sh down
+
+# Start network and create a channel named 'mychannel'
+./network.sh up createChannel
+
+
+# Clean up any previous network
+./network.sh down
+
+# Start network with Certificate Authority
+./network.sh up createChannel -ca
+
+
+# Deploy the basic asset transfer chaincode (JavaScript)
+./network.sh deployCC -ccn basic -ccp ../asset-transfer-basic/chaincode-javascript/ -ccl javascript
+
+# Or deploy Go chaincode
+./network.sh deployCC -ccn basic -ccp ../asset-transfer-basic/chaincode-go/ -ccl go
+
+# Or deploy TypeScript chaincode
+./network.sh deployCC -ccn basic -ccp ../asset-transfer-basic/chaincode-typescript/ -ccl typescript
+
+
+docker ps
+
+
+# View logs for specific container
+docker logs peer0.org1.example.com
+
+# View logs for orderer
+docker logs orderer.example.com
+
+
+
+#!/bin/bash
+
+echo "🚀 Starting Hyperledger Fabric Network..."
+
+# Navigate to test network directory
+cd ~/fabric-workspace/fabric-samples/test-network
+
+# Clean up any existing network
+echo "🧹 Cleaning up previous network..."
+./network.sh down
+
+# Start network with CA and create channel
+echo "🌐 Starting network with Certificate Authority..."
+./network.sh up createChannel -ca
+
+# Deploy chaincode
+echo "📦 Deploying basic chaincode..."
+./network.sh deployCC -ccn basic -ccp ../asset-transfer-basic/chaincode-javascript/ -ccl javascript
+
+# Verify deployment
+echo "✅ Verifying network status..."
+docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+
+echo "🎉 Network started successfully!"
+echo "Channel: mychannel"
+echo "Chaincode: basic"
+echo "Organizations: Org1, Org2"
+echo "Orderer: orderer.example.com"
+
+
+
+chmod +x start-network.sh
+./start-network.sh
+
+
+
+# Add to your ~/.bashrc or ~/.zshrc
+export FABRIC_CFG_PATH=~/fabric-workspace/fabric-samples/config
+export PATH=$PATH:~/fabric-workspace/fabric-samples/bin
+
+# Set core peer environment for Org1
+export CORE_PEER_TLS_ENABLED=true
+export CORE_PEER_LOCALMSPID="Org1MSP"
+export CORE_PEER_TLS_ROOTCERT_FILE=~/fabric-workspace/fabric-samples/test-network/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt
+export CORE_PEER_MSPCONFIGPATH=~/fabric-workspace/fabric-samples/test-network/organizations/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp
+export CORE_PEER_ADDRESS=localhost:7051
+
+
+# Test peer chaincode query
+peer chaincode query -C mychannel -n basic -c '{"Args":["GetAllAssets"]}'
+
+
+./network.sh down
+./network.sh restart
+docker system prune -a --volumes
+
+
+# Connection profile for Org1
+~/fabric-workspace/fabric-samples/test-network/organizations/peerOrganizations/org1.example.com/connection-org1.json
+
+# Connection profile for Org2
+~/fabric-workspace/fabric-samples/test-network/organizations/peerOrganizations/org2.example.com/connection-org2.json
+
+
+# Start your Node.js app
+cd ~/your-node-app
+npm run dev
+
+
+
+your-node-app/
+├── config/
+│   ├── connection-org1.json
+│   └── connection-org2.json
+├── wallet/                    (created automatically)
+├── fabric-utils.js
+├── blockchain-service.js
+├── server.js
+├── package.json
+└── .env
+
+
+npm run dev
+
+
+
+# Get assets via Org1
+curl "http://localhost:3000/api/assets?org=org1"
+
+# Get assets via Org2
+curl "http://localhost:3000/api/assets?org=org2"
+
+# Create asset via Org1
+curl -X POST http://localhost:3000/api/assets \
+  -H "Content-Type: application/json" \
+  -d '{"id":"asset10","color":"red","size":"40","owner":"Alice","appraisedValue":"1000","org":"org1"}'

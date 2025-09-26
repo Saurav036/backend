@@ -617,7 +617,6 @@
 
 // module.exports = FabricUtils;
 
-
 const { Gateway, Wallets } = require('fabric-network');
 const ConnectionProfileBuilder = require('./connection-profile-builder');
 const path = require('path');
@@ -667,7 +666,6 @@ class FabricUtils {
         return wallet;
     }
 
-    // Import admin for Org1
     async importAdminOrg1() {
         try {
             console.log('👤 Importing Admin for Org1...');
@@ -726,7 +724,6 @@ class FabricUtils {
         }
     }
 
-    // Import admin for Org2 (MISSING FUNCTION - NOW ADDED)
     async importAdminOrg2() {
         try {
             console.log('👤 Importing Admin for Org2...');
@@ -785,7 +782,7 @@ class FabricUtils {
         }
     }
 
-    // Connect to network as Org1
+    // Updated connection with discovery disabled
     async connectToNetworkAsOrg1() {
         try {
             console.log('🔗 Connecting to network as Org1...');
@@ -793,7 +790,6 @@ class FabricUtils {
             const ccp = this.buildCCPOrg1();
             const wallet = await this.buildWallet(Wallets, this.walletPath);
 
-            // Check if identity exists in wallet
             const identity = await wallet.get(this.org1UserId);
             if (!identity) {
                 throw new Error(`Identity ${this.org1UserId} not found in wallet. Run importAdminOrg1 first.`);
@@ -801,12 +797,12 @@ class FabricUtils {
 
             const gateway = new Gateway();
             
-            // Connect with more detailed options
+            // Connect with DISCOVERY DISABLED
             await gateway.connect(ccp, {
                 wallet,
                 identity: this.org1UserId,
                 discovery: { 
-                    enabled: true, 
+                    enabled: false,  // DISABLED DISCOVERY
                     asLocalhost: true 
                 },
                 eventHandlerOptions: {
@@ -815,7 +811,7 @@ class FabricUtils {
                 }
             });
 
-            console.log('✅ Connected to gateway');
+            console.log('✅ Connected to gateway (discovery disabled)');
 
             const network = await gateway.getNetwork(this.channelName);
             console.log('✅ Connected to channel:', this.channelName);
@@ -831,7 +827,6 @@ class FabricUtils {
         }
     }
 
-    // Connect to network as Org2
     async connectToNetworkAsOrg2() {
         try {
             console.log('🔗 Connecting to network as Org2...');
@@ -839,7 +834,6 @@ class FabricUtils {
             const ccp = this.buildCCPOrg2();
             const wallet = await this.buildWallet(Wallets, this.walletPath);
 
-            // Check if identity exists in wallet
             const identity = await wallet.get(this.org2UserId);
             if (!identity) {
                 throw new Error(`Identity ${this.org2UserId} not found in wallet. Run importAdminOrg2 first.`);
@@ -847,12 +841,12 @@ class FabricUtils {
 
             const gateway = new Gateway();
             
-            // Connect with more detailed options
+            // Connect with DISCOVERY DISABLED
             await gateway.connect(ccp, {
                 wallet,
                 identity: this.org2UserId,
                 discovery: { 
-                    enabled: true, 
+                    enabled: false,  // DISABLED DISCOVERY
                     asLocalhost: true 
                 },
                 eventHandlerOptions: {
@@ -861,7 +855,7 @@ class FabricUtils {
                 }
             });
 
-            console.log('✅ Connected to gateway');
+            console.log('✅ Connected to gateway (discovery disabled)');
 
             const network = await gateway.getNetwork(this.channelName);
             console.log('✅ Connected to channel:', this.channelName);
@@ -877,7 +871,6 @@ class FabricUtils {
         }
     }
 
-    // Generic connect method
     async connectToNetwork(org = 'org1') {
         if (org === 'org1') {
             return await this.connectToNetworkAsOrg1();
@@ -890,3 +883,4 @@ class FabricUtils {
 }
 
 module.exports = FabricUtils;
+
